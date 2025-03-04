@@ -19,10 +19,9 @@ namespace REGLOGPROP_LEASNOTIF.Controller
             _context = new Context();
         }
 
-        // Method to insert a new maintainance request
-        public void InsertMaintainance(int propertyId, string tenantId, string description, string status, string imagePath)
+        public async Task InsertMaintenanceAsync(int propertyId, string tenantId, string description, string status, string imagePath)
         {
-            var maintainance = new Maintainance
+            var maintenance = new Maintenance
             {
                 PropertyId = propertyId,
                 TenantId = tenantId,
@@ -31,18 +30,16 @@ namespace REGLOGPROP_LEASNOTIF.Controller
                 ImagePath = imagePath
             };
 
-            _context.Maintainances.Add(maintainance);
-            _context.SaveChanges();
+            _context.Maintainances.Add(maintenance);
+            await _context.SaveChangesAsync();
         }
 
-
-        public List<Maintainance> ViewMaintainances()
+        public async Task<List<Maintenance>> ViewMaintenancesAsync()
         {
-            return _context.Maintainances.ToList();
+            return await _context.Maintainances.ToListAsync();
         }
 
-
-        public string GetStatusByRequestId(int requestId)
+        public async Task<string> GetStatusByRequestIdAsync(int requestId)
         {
             string status = null;
             using (var connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
@@ -52,10 +49,10 @@ namespace REGLOGPROP_LEASNOTIF.Controller
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.Add(new SqlParameter("@RequestId", requestId));
 
-                    connection.Open();
-                    using (var reader = command.ExecuteReader())
+                    await connection.OpenAsync();
+                    using (var reader = await command.ExecuteReaderAsync())
                     {
-                        if (reader.Read())
+                        if (await reader.ReadAsync())
                         {
                             status = reader["Status"].ToString();
                         }
@@ -65,14 +62,13 @@ namespace REGLOGPROP_LEASNOTIF.Controller
             return status;
         }
 
-
-        public bool UpdateStatus(int requestId, string newStatus)
+        public async Task<bool> UpdateStatusAsync(int requestId, string newStatus)
         {
-            var maintainance = _context.Maintainances.Find(requestId);
-            if (maintainance != null)
+            var maintenance = await _context.Maintainances.FindAsync(requestId);
+            if (maintenance != null)
             {
-                maintainance.Status = newStatus;
-                _context.SaveChanges();
+                maintenance.Status = newStatus;
+                await _context.SaveChangesAsync();
                 return true;
             }
             else
@@ -81,22 +77,22 @@ namespace REGLOGPROP_LEASNOTIF.Controller
             }
         }
 
-        public List<Maintainance> GetMaintainancesByTenantId(int tenantId)
+        public async Task<List<Maintenance>> GetMaintenancesByTenantIdAsync(string tenantId)
         {
-            var maintainances = new List<Maintainance>();
+            var maintenances = new List<Maintenance>();
             using (var connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
             {
-                using (var command = new SqlCommand("GetMaintainancesByTenantId", connection))
+                using (var command = new SqlCommand("GetMaintenancesByTenantId", connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.Add(new SqlParameter("@TenantId", tenantId));
 
-                    connection.Open();
-                    using (var reader = command.ExecuteReader())
+                    await connection.OpenAsync();
+                    using (var reader = await command.ExecuteReaderAsync())
                     {
-                        while (reader.Read())
+                        while (await reader.ReadAsync())
                         {
-                            var maintainance = new Maintainance
+                            var maintenance = new Maintenance
                             {
                                 RequestId = (int)reader["RequestId"],
                                 PropertyId = (int)reader["PropertyId"],
@@ -105,13 +101,36 @@ namespace REGLOGPROP_LEASNOTIF.Controller
                                 Status = reader["Status"].ToString(),
                                 ImagePath = reader["ImagePath"].ToString()
                             };
-                            maintainances.Add(maintainance);
+                            maintenances.Add(maintenance);
                         }
                     }
                 }
             }
-            return maintainances;
+            return maintenances;
         }
 
+        public async Task<(int PropertyId, string TenantId)?> GetPropertyAndTenantIdFromLeaseAsync(int leaseId)
+        {
+            using (var connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
+            {
+                using (var command = new SqlCommand("GetPropertyAndTenantIdFromLease", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.Add(new SqlParameter("@LeaseId", leaseId));
+
+                    await connection.OpenAsync();
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            int propertyId = (int)reader["PropertyId"];
+                            string tenantId = reader["TenantId"].ToString();
+                            return (propertyId, tenantId);
+                        }
+                    }
+                }
+            }
+            return null;
+        }
     }
 }

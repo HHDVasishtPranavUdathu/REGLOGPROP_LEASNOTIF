@@ -23,34 +23,34 @@ namespace REGLOGPROP_LEASNOTIF.Managers
 
         public void ExecuteLogin()
         {
-            Console.WriteLine("Enter UserID:");
-            string userId = Console.ReadLine();
-            Console.WriteLine("A-Enter Password");
-            Console.WriteLine("B-Forget Password");
-            char option = Char.Parse(Console.ReadLine());
+            //Console.WriteLine("Enter UserID :");
+            //string userId = Console.ReadLine();
+            //Console.WriteLine("A-Enter Password");
+            //Console.WriteLine("B-Forget Password");
+            //char option = Char.Parse(Console.ReadLine());
 
-            if (option == 'A' || option == 'a')
-            {
-                Console.WriteLine("Enter Password:");
-                string password = Console.ReadLine();
-                int result = controller.LoginChk(userId, password, out _);
+            //if (option == 'A' || option == 'a')
+            //{
+            //    Console.WriteLine("Enter Password:");
+            //    string password = Console.ReadLine();
+            //    int result = controller.LoginChk(userId, password, out _);
 
-                if (result == 1)
-                {
-                    Console.WriteLine("LOGIN SUCCESSFUL");
-                }
-                else
-                {
-                    Console.WriteLine("SORRY, LOGIN UNSUCCESSFUL DUE TO INCORRECT USERID OR PASSWORD");
-                }
-            }
-            else
-            {
-                HandleForgotPassword(userId);
-            }
+            //    if (result == 1)
+            //    {
+            //        Console.WriteLine("LOGIN SUCCESSFUL");
+            //    }
+            //    else
+            //    {
+            //        Console.WriteLine("SORRY, LOGIN UNSUCCESSFUL DUE TO INCORRECT USERID OR PASSWORD");
+            //    }
+            //}
+            //else
+            //{
+            //    HandleForgotPassword(userId);
+            //}
         }
 
-        private void HandleForgotPassword(string userId)
+        public  void HandleForgotPassword(string userId)
         {
             Console.WriteLine("1.Forget the Answer");
             Console.WriteLine("2.Enter Answer");

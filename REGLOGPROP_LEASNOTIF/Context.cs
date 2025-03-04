@@ -23,7 +23,7 @@ namespace REGLOGPROP_LEASNOTIF
         public DbSet<Lease> Leases { get; set; }
         public DbSet<Notification> notifications { get; set; }
         public DbSet<Paymennts> payments { get; set; }
-        public DbSet<Maintainance> Maintainances { get; set; }
+        public DbSet<Maintenance> Maintainances { get; set; }
 
 
 

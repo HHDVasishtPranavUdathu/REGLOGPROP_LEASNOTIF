@@ -2,16 +2,15 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using REGLOGPROP_LEASNOTIF.Controller;
 using REGLOGPROP_LEASNOTIF.Models;
 
 namespace REGLOGPROP_LEASNOTIF.Managers
 {
-    public class Maintainance_Manager
+    public class MaintenanceManager
     {
-        public void mm()
+        public async Task RunAsync()
         {
             var controller = new Controller_m();
             bool exit = false;
@@ -19,36 +18,39 @@ namespace REGLOGPROP_LEASNOTIF.Managers
             while (!exit)
             {
                 Console.WriteLine("\nChoose an option:");
-                Console.WriteLine("1. Insert a new maintainance request");
-                Console.WriteLine("2. View all maintainance requests");
+                Console.WriteLine("1. Insert a new maintenance request");
+                Console.WriteLine("2. View all maintenance requests");
                 Console.WriteLine("3. Get status by request ID");
                 Console.WriteLine("4. Update status by request ID");
-                Console.WriteLine("5. Get all maintainance requests by Tenant ID");
-                Console.WriteLine("6. Exit");
+                Console.WriteLine("5. Get all maintenance requests by Tenant ID");
+                Console.WriteLine("6. Fetch and display Property ID and Tenant ID from Lease");
+                Console.WriteLine("7. Exit");
 
-                int choice;
-                if (int.TryParse(Console.ReadLine(), out choice))
+                if (int.TryParse(Console.ReadLine(), out int choice))
                 {
                     switch (choice)
                     {
                         case 1:
-                            InsertMaintainance(controller);
+                            await InsertMaintenanceAsync(controller);
                             break;
                         case 2:
-                            ViewMaintainances(controller);
+                            await ViewMaintenancesAsync(controller);
                             break;
                         case 3:
-                            GetStatusByRequestId(controller);
+                            await GetStatusByRequestIdAsync(controller);
                             break;
                         case 4:
-                            UpdateStatus(controller);
+                            await UpdateStatusAsync(controller);
                             break;
                         case 5:
-                            GetMaintainancesByTenantId(controller);
+                            await GetMaintenancesByTenantIdAsync(controller);
                             break;
                         case 6:
+                            await FetchAndDisplayPropertyAndTenantIdAsync(controller);
+                            break;
+                        case 7:
                             exit = true;
-                            Console.WriteLine("");
+                            Console.WriteLine("Exiting...");
                             break;
                         default:
                             Console.WriteLine("Invalid choice. Please try again.");
@@ -62,10 +64,14 @@ namespace REGLOGPROP_LEASNOTIF.Managers
             }
         }
 
-        static void InsertMaintainance(Controller_m controller)
+        static async Task InsertMaintenanceAsync(Controller_m controller)
         {
             Console.WriteLine("Enter Property ID:");
-            int propertyId = int.Parse(Console.ReadLine());
+            if (!int.TryParse(Console.ReadLine(), out int propertyId))
+            {
+                Console.WriteLine("Invalid Property ID. Please enter a valid number.");
+                return;
+            }
 
             Console.WriteLine("Enter Tenant ID:");
             string tenantId = Console.ReadLine();
@@ -76,7 +82,7 @@ namespace REGLOGPROP_LEASNOTIF.Managers
             Console.WriteLine("Enter Image Path (optional):");
             string imagePath = Console.ReadLine();
 
-            var maintainance = new Maintainance
+            var maintenance = new Maintenance
             {
                 PropertyId = propertyId,
                 TenantId = tenantId,
@@ -86,8 +92,8 @@ namespace REGLOGPROP_LEASNOTIF.Managers
             };
 
             var validationResults = new List<ValidationResult>();
-            var validationContext = new ValidationContext(maintainance);
-            if (!Validator.TryValidateObject(maintainance, validationContext, validationResults, true))
+            var validationContext = new ValidationContext(maintenance);
+            if (!Validator.TryValidateObject(maintenance, validationContext, validationResults, true))
             {
                 foreach (var validationResult in validationResults)
                 {
@@ -96,93 +102,103 @@ namespace REGLOGPROP_LEASNOTIF.Managers
             }
             else
             {
-                controller.InsertMaintainance(propertyId, tenantId, description, "Pending", imagePath);
-                Console.WriteLine("Maintainance request inserted successfully.");
+                await controller.InsertMaintenanceAsync(propertyId, tenantId, description, "Pending", imagePath);
+                Console.WriteLine("Maintenance request inserted successfully.");
             }
         }
 
-        static void ViewMaintainances(Controller_m controller)
+        static async Task ViewMaintenancesAsync(Controller_m controller)
         {
-            var maintainances = controller.ViewMaintainances();
+            var maintenances = await controller.ViewMaintenancesAsync();
 
-            Console.WriteLine("\nAll Maintainance Requests:");
-            foreach (var maintainance in maintainances)
+            Console.WriteLine("\nAll Maintenance Requests:");
+            foreach (var maintenance in maintenances)
             {
-                Console.WriteLine($"RequestId: {maintainance.RequestId}, PropertyId: {maintainance.PropertyId}, TenantId: {maintainance.TenantId}, Description: {maintainance.Description}, Status: {maintainance.Status}, ImagePath: {maintainance.ImagePath}");
+                Console.WriteLine($"RequestId: {maintenance.RequestId}, PropertyId: {maintenance.PropertyId}, TenantId: {maintenance.TenantId}, Description: {maintenance.Description}, Status: {maintenance.Status}, ImagePath: {maintenance.ImagePath}");
             }
         }
 
-        static void GetStatusByRequestId(Controller_m controller)
+        static async Task GetStatusByRequestIdAsync(Controller_m controller)
         {
             Console.WriteLine("Enter Request ID to fetch status:");
-            int requestId;
-            if (int.TryParse(Console.ReadLine(), out requestId))
+            if (!int.TryParse(Console.ReadLine(), out int requestId))
             {
-                string status = controller.GetStatusByRequestId(requestId);
-                if (status != null)
-                {
-                    Console.WriteLine($"Status for Request ID {requestId}: {status}");
-                }
-                else
-                {
-                    Console.WriteLine("Request ID not found.");
-                }
+                Console.WriteLine("Invalid Request ID. Please enter a valid number.");
+                return;
+            }
+
+            string status = await controller.GetStatusByRequestIdAsync(requestId);
+            if (status != null)
+            {
+                Console.WriteLine($"Status for Request ID {requestId}: {status}");
             }
             else
             {
-                Console.WriteLine("Invalid Request ID. Please enter a valid number.");
+                Console.WriteLine("Request ID not found.");
             }
         }
 
-        static void UpdateStatus(Controller_m controller)
+        static async Task UpdateStatusAsync(Controller_m controller)
         {
             Console.WriteLine("Enter Request ID to update status:");
-            int requestId;
-            if (int.TryParse(Console.ReadLine(), out requestId))
+            if (!int.TryParse(Console.ReadLine(), out int requestId))
             {
-                Console.WriteLine("Enter new status:");
-                string newStatus = Console.ReadLine();
+                Console.WriteLine("Invalid Request ID. Please enter a valid number.");
+                return;
+            }
 
-                bool isUpdated = controller.UpdateStatus(requestId, newStatus);
-                if (isUpdated)
-                {
-                    Console.WriteLine("Status updated successfully.");
-                }
-                else
-                {
-                    Console.WriteLine("request Id not found.");
-                }
+            Console.WriteLine("Enter new status:");
+            string newStatus = Console.ReadLine();
+
+            bool isUpdated = await controller.UpdateStatusAsync(requestId, newStatus);
+            if (isUpdated)
+            {
+                Console.WriteLine("Status updated successfully.");
             }
             else
             {
-                Console.WriteLine("Invalid Request ID. Please enter a valid number.");
+                Console.WriteLine("Request ID not found.");
             }
         }
 
-        static void GetMaintainancesByTenantId(Controller_m controller)
+        static async Task GetMaintenancesByTenantIdAsync(Controller_m controller)
         {
             Console.WriteLine("Enter Tenant ID to fetch all maintenance requests:");
-            int tenantId;
-            if (int.TryParse(Console.ReadLine(), out tenantId))
-            {
-                var tenantMaintainances = controller.GetMaintainancesByTenantId(tenantId);
+            string tenantId = Console.ReadLine();
 
-                if (tenantMaintainances.Any())
+            var tenantMaintenances = await controller.GetMaintenancesByTenantIdAsync(tenantId);
+
+            if (tenantMaintenances.Any())
+            {
+                Console.WriteLine($"\nAll Maintenance Requests for Tenant ID {tenantId}:");
+                foreach (var maintenance in tenantMaintenances)
                 {
-                    Console.WriteLine($"\nAll Maintenance Requests for Tenant ID {tenantId}:");
-                    foreach (var maintainance in tenantMaintainances)
-                    {
-                        Console.WriteLine($"RequestId: {maintainance.RequestId}, PropertyId: {maintainance.PropertyId}, TenantId: {maintainance.TenantId}, Description: {maintainance.Description}, Status: {maintainance.Status}, ImagePath: {maintainance.ImagePath}");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("No maintenance requests found for the given Tenant ID");
+                    Console.WriteLine($"RequestId: {maintenance.RequestId}, PropertyId: {maintenance.PropertyId}, TenantId: {maintenance.TenantId}, Description: {maintenance.Description}, Status: {maintenance.Status}, ImagePath: {maintenance.ImagePath}");
                 }
             }
             else
             {
-                Console.WriteLine("Invalid Tenant ID. Please enter a valid number.");
+                Console.WriteLine("No maintenance requests found for the given Tenant ID.");
+            }
+        }
+
+        static async Task FetchAndDisplayPropertyAndTenantIdAsync(Controller_m controller)
+        {
+            Console.WriteLine("Enter Lease ID to fetch Property ID and Tenant ID:");
+            if (!int.TryParse(Console.ReadLine(), out int leaseId))
+            {
+                Console.WriteLine("Invalid Lease ID. Please enter a valid number.");
+                return;
+            }
+
+            var result = await controller.GetPropertyAndTenantIdFromLeaseAsync(leaseId);
+            if (result.HasValue)
+            {
+                Console.WriteLine($"Property ID: {result.Value.PropertyId}, Tenant ID: {result.Value.TenantId}");
+            }
+            else
+            {
+                Console.WriteLine("Lease ID not found.");
             }
         }
     }
