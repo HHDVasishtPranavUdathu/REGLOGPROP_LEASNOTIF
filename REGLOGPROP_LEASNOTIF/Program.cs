@@ -93,6 +93,7 @@ namespace REGLOGPROP_LEASNOTIF
                             Console.WriteLine("4. Payment methods");
                             Console.WriteLine("5. Maintenance");
                             Console.WriteLine("6. Exit");
+                            Console.WriteLine(name);
 
                             var tenantChoice = Console.ReadLine();
                             switch (tenantChoice)
