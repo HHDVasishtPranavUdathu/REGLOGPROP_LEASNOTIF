@@ -27,7 +27,7 @@ namespace REGLOGPROP_LEASNOTIF.Managers
                                                 sendersId, notificationDescription);
             }
         }
-
+         
         //public void ReadNotifications()
         //{
         //    using (var context = new Context())
