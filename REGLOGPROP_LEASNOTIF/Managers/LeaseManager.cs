@@ -21,11 +21,8 @@ namespace REGLOGPROP_LEASNOTIF.Managers
             notificationManager = new NotificationManager();
         }
 
-        public (string leaseId, string ownerId)? Lease()
+        public (string leaseId, string ownerId)? Lease(string? id)
         {
-            Console.WriteLine("Enter Id:");
-            string? id = Console.ReadLine();
-
             Console.WriteLine("Enter Property Id:");
             int? propertyId = Convert.ToInt32(Console.ReadLine());
             var property = cr.cc.Props.Include(p => p.Registration).FirstOrDefault(p => p.Property_Id == propertyId);
@@ -67,6 +64,7 @@ namespace REGLOGPROP_LEASNOTIF.Managers
                     Property_Id = propertyId,
                     StartDate = startDate,
                     EndDate = endDate,
+                    Owner_Signature = false,
                     Lease_status = false
                 };
 
@@ -80,19 +78,8 @@ namespace REGLOGPROP_LEASNOTIF.Managers
                 }
                 lease.Tenant_Signature = true;
                 string? ownerId = cr.GetOwnerIdByPropertyId(propertyId);
-                var signatureMatchOwner = cr.cc.Registrations.FirstOrDefault(r => r.ID == ownerId)?.Signature;
+
                 notificationManager.InsertNotification(id, ownerId, "Tenant signed the lease");
-
-                Console.WriteLine("Enter Owner Signature:");
-                string? tempOwnerSignature = Console.ReadLine();
-
-                if (tempOwnerSignature != signatureMatchOwner)
-                {
-                    Console.WriteLine("Owner signature validation failed. Lease data not inserted.");
-                    return null;
-                }
-                lease.Owner_Signature = true;
-                notificationManager.InsertNotification(id, ownerId, "Owner signed the lease");
 
                 var validationResults = new List<ValidationResult>();
                 var validationContext = new ValidationContext(lease);
@@ -108,14 +95,12 @@ namespace REGLOGPROP_LEASNOTIF.Managers
                     return null;
                 }
 
-                lease.Lease_status = true;
-
                 cr.InsertData_Lease(lease);
 
                 Console.WriteLine("Lease data inserted successfully.");
                 DisplayLeaseDetails(lease);
 
-                notificationManager.InsertNotification("sys", "sys", "Both parties signed the lease and it is successfully inserted");
+                notificationManager.InsertNotification(id, ownerId, "Tenant signed the lease. Awaiting owner signature.");
                 return (lease.ID, ownerId);
             }
             else
@@ -123,6 +108,51 @@ namespace REGLOGPROP_LEASNOTIF.Managers
                 Console.WriteLine("Property not found.");
                 return null;
             }
+        }
+
+        public bool UpdateOwnerSignatureAndFinalizeLease(int leaseId, string ownerId)
+        {
+            // Find the lease by its ID
+            var lease = cr.cc.Leases.FirstOrDefault(l => l.LeaseId == leaseId);
+            if (lease == null)
+            {
+                Console.WriteLine("Lease not found.");
+                return false;
+            }
+
+            // Validate that the lease has not been finalized
+            if (lease.Lease_status == true)
+            {
+                Console.WriteLine("The lease is already finalized.");
+                return false;
+            }
+
+            // Get the expected owner signature from the database
+            var expectedOwnerSignature = cr.cc.Registrations.FirstOrDefault(r => r.ID == ownerId)?.Signature;
+
+            // Prompt for the owner's signature
+            Console.WriteLine("Enter Owner Signature:");
+            string? inputOwnerSignature = Console.ReadLine();
+
+            if (inputOwnerSignature != expectedOwnerSignature)
+            {
+                Console.WriteLine("Owner signature validation failed.");
+                return false;
+            }
+
+            // Update owner signature and lease status
+            lease.Owner_Signature = true;
+            lease.Lease_status = true;
+
+            // Save changes to the database
+            cr.cc.SaveChanges();
+
+            // Send notifications
+            notificationManager.InsertNotification(ownerId, lease.ID, "Owner signed the lease and the lease is finalized.");
+            notificationManager.InsertNotification(ownerId, lease.ID, $"Lease {leaseId} is finalized.");
+
+            Console.WriteLine("Owner signature added and lease finalized successfully.");
+            return true;
         }
 
         public void DisplayLeaseDetails(Lease lease)
@@ -137,5 +167,4 @@ namespace REGLOGPROP_LEASNOTIF.Managers
             Console.WriteLine($"Lease Status: {lease.Lease_status}");
         }
     }
-
 }

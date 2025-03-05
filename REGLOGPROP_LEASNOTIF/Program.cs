@@ -7,11 +7,12 @@ namespace REGLOGPROP_LEASNOTIF
 {
     class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             // Initialize context
             var context = new Context();
             var code_java = false;
+            string name;
 
             // Initialize controllers and managers
             Controller_ln cr = new Controller_ln();
@@ -49,7 +50,7 @@ namespace REGLOGPROP_LEASNOTIF
                 {
                     Console.WriteLine("enter userid");
                     string userId = Console.ReadLine();
-        
+                    name = userId;
                     var li = new Controller_rlp();
                     var cock = new Context();
                     var log = new Login(li, cock);
@@ -92,6 +93,7 @@ namespace REGLOGPROP_LEASNOTIF
                             Console.WriteLine("4. Payment methods");
                             Console.WriteLine("5. Maintenance");
                             Console.WriteLine("6. Exit");
+                            Console.WriteLine(name);
 
                             var tenantChoice = Console.ReadLine();
                             switch (tenantChoice)
@@ -101,7 +103,7 @@ namespace REGLOGPROP_LEASNOTIF
                                     break;
                                 
                                 case "2":
-                                    leaseManager.Lease();
+                                    leaseManager.Lease(name);
                                     break;
                                 case "3":
                                     notificationManager.ReadNotifications();
@@ -163,8 +165,23 @@ namespace REGLOGPROP_LEASNOTIF
                                     RLP_Manager.DisplayProps();
                                     break;
                                 case "4":
-                                    leaseManager.Lease();
-                                    break;
+                                    {
+                                        Console.WriteLine("Enter Lease ID:");
+                                        int leaseId = Convert.ToInt32(Console.ReadLine());
+                                        // Call the method to validate the owner's signature and finalize the lease
+                                        bool success = leaseManager.UpdateOwnerSignatureAndFinalizeLease(leaseId, name);
+
+                                        if (success)
+                                        {
+                                            Console.WriteLine("The lease has been successfully finalized with the owner's signature.");
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("Failed to finalize the lease. Please check the inputs or try again.");
+                                        }
+                                        break;
+                                    }
+
                                 case "5":
                                     ptm.pt();
                                     break;
