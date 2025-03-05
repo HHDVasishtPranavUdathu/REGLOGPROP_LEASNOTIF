@@ -25,6 +25,14 @@ namespace REGLOGPROP_LEASNOTIF.Managers
         {
             Console.WriteLine("Enter Property Id:");
             int? propertyId = Convert.ToInt32(Console.ReadLine());
+
+            var existingLease = cr.cc.Leases.FirstOrDefault(l => l.Property_Id == propertyId && l.Lease_status == true);
+            if (existingLease != null)
+            {
+                Console.WriteLine("This property is already under an active lease. A new lease cannot be created.");
+                return null;
+            }
+
             var property = cr.cc.Props.Include(p => p.Registration).FirstOrDefault(p => p.Property_Id == propertyId);
             if (property != null)
             {
@@ -49,8 +57,15 @@ namespace REGLOGPROP_LEASNOTIF.Managers
                 {
                     Console.WriteLine("Enter End Date (yyyy-mm-dd):");
                     if (DateTime.TryParse(Console.ReadLine(), out endDate))
-                    {
-                        break;
+                    { 
+                        if (endDate > startDate)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            Console.WriteLine("End date must be greater than start date");
+                        }
                     }
                     else
                     {
@@ -130,7 +145,7 @@ namespace REGLOGPROP_LEASNOTIF.Managers
 
             // Get the expected owner signature from the database
             var expectedOwnerSignature = cr.cc.Registrations.FirstOrDefault(r => r.ID == ownerId)?.Signature;
-            DisplayLeasesByOwner(ownerId);
+           
             // Prompt for the owner's signature
             Console.WriteLine("Enter Owner Signature:");
             string? inputOwnerSignature = Console.ReadLine();

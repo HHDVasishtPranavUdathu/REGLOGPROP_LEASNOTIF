@@ -88,7 +88,7 @@ namespace REGLOGPROP_LEASNOTIF
                         {
                             Console.WriteLine("Choose an option:");
                             Console.WriteLine("1. Display property details");
-                            Console.WriteLine("2. Insert into lease");
+                            Console.WriteLine("2. get new lease");
                             Console.WriteLine("3. Notifications");
                             Console.WriteLine("4. Payment methods");
                             Console.WriteLine("5. Maintenance");
@@ -106,7 +106,7 @@ namespace REGLOGPROP_LEASNOTIF
                                     leaseManager.Lease(name);
                                     break;
                                 case "3":
-                                    notificationManager.ReadNotifications();
+                                    notificationManager.ReadNotifications(name,name);
                                     break;
                                 case "4":
                                     ptm.pt();
@@ -132,10 +132,11 @@ namespace REGLOGPROP_LEASNOTIF
                             Console.WriteLine("1. Insert property");
                             Console.WriteLine("2. Delete property");
                             Console.WriteLine("3. Display property");
-                            Console.WriteLine("4. Insert into lease");
+                            Console.WriteLine("4. lease signing");
                             Console.WriteLine("5. Payment management");
                             Console.WriteLine("6. Maintenance");
-                            Console.WriteLine("7. Exit");
+                            Console.WriteLine("7. Notification");
+                            Console.WriteLine("8. Exit");
 
                             var ownerChoice = Console.ReadLine();
                             switch (ownerChoice)
@@ -192,6 +193,9 @@ namespace REGLOGPROP_LEASNOTIF
                                     mm.RunAsync();
                                     break;
                                 case "7":
+                                    notificationManager.ReadNotifications(name, name);
+                                    break;
+                                case "8":
                                     ownerExit = true;
                                     break;
                                 default:
