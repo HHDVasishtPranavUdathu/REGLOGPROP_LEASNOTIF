@@ -12,7 +12,7 @@ namespace REGLOGPROP_LEASNOTIF
             // Initialize context
             var context = new Context();
             var code_java = false;
-            string name;
+            string name ="";
 
             // Initialize controllers and managers
             Controller_ln cr = new Controller_ln();
@@ -164,11 +164,12 @@ namespace REGLOGPROP_LEASNOTIF
                                 case "3":
                                     RLP_Manager.DisplayProps();
                                     break;
+
                                 case "4":
-                                    {
-                                        Console.WriteLine("Enter Lease ID:");
+                                    leaseManager.DisplayLeasesByOwner(name);
+                                    Console.WriteLine("Enter Lease ID:");
                                         int leaseId = Convert.ToInt32(Console.ReadLine());
-                                        // Call the method to validate the owner's signature and finalize the lease
+                                        
                                         bool success = leaseManager.UpdateOwnerSignatureAndFinalizeLease(leaseId, name);
 
                                         if (success)
@@ -180,7 +181,7 @@ namespace REGLOGPROP_LEASNOTIF
                                             Console.WriteLine("Failed to finalize the lease. Please check the inputs or try again.");
                                         }
                                         break;
-                                    }
+                                    
 
                                 case "5":
                                     ptm.pt();
