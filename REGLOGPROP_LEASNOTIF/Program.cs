@@ -88,7 +88,7 @@ namespace REGLOGPROP_LEASNOTIF
                         {
                             Console.WriteLine("Choose an option:");
                             Console.WriteLine("1. Display property details");
-                            Console.WriteLine("2. Insert into lease");
+                            Console.WriteLine("2. get new lease");
                             Console.WriteLine("3. Notifications");
                             Console.WriteLine("4. Payment methods");
                             Console.WriteLine("5. Maintenance");
@@ -132,7 +132,7 @@ namespace REGLOGPROP_LEASNOTIF
                             Console.WriteLine("1. Insert property");
                             Console.WriteLine("2. Delete property");
                             Console.WriteLine("3. Display property");
-                            Console.WriteLine("4. lease signing ");
+                            Console.WriteLine("4. lease signing");
                             Console.WriteLine("5. Payment management");
                             Console.WriteLine("6. Maintenance");
                             Console.WriteLine("7. Notification");
