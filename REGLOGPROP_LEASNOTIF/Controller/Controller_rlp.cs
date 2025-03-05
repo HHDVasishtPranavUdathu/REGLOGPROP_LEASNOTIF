@@ -70,7 +70,7 @@ namespace REGLOGPROP_LEASNOTIF.Controller
                 var ppp = con.Props.Find(kmm.Property_Id);
                 if (ppp != null)
                 {
-                    con.Remove(kmm);
+                    con.Remove(ppp);
                     con.SaveChanges();
                     return true;
                 }
