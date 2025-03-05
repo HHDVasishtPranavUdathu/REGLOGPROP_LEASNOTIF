@@ -112,6 +112,7 @@ namespace REGLOGPROP_LEASNOTIF.Managers
 
         public bool UpdateOwnerSignatureAndFinalizeLease(int leaseId, string ownerId)
         {
+            
             // Find the lease by its ID
             var lease = cr.cc.Leases.FirstOrDefault(l => l.LeaseId == leaseId);
             if (lease == null)
@@ -129,7 +130,7 @@ namespace REGLOGPROP_LEASNOTIF.Managers
 
             // Get the expected owner signature from the database
             var expectedOwnerSignature = cr.cc.Registrations.FirstOrDefault(r => r.ID == ownerId)?.Signature;
-
+            DisplayLeasesByOwner(ownerId);
             // Prompt for the owner's signature
             Console.WriteLine("Enter Owner Signature:");
             string? inputOwnerSignature = Console.ReadLine();
@@ -166,5 +167,51 @@ namespace REGLOGPROP_LEASNOTIF.Managers
             Console.WriteLine($"Owner Signature: {lease.Owner_Signature}");
             Console.WriteLine($"Lease Status: {lease.Lease_status}");
         }
+
+
+        public void DisplayLeasesByOwner(string ownerId)
+        {
+            // Get all properties owned by the owner
+            var properties = cr.cc.Props.Where(p => p.Owner_Id == ownerId).ToList();
+
+            if (properties.Count == 0)
+            {
+                Console.WriteLine("No properties found for this owner.");
+                return;
+            }
+
+            // Extract the Property IDs into a list
+            var propertyIds = properties.Select(p => p.Property_Id).ToList();
+
+            // Get all leases associated with the owner's properties
+            var leases = cr.cc.Leases
+                .Include(l => l.Prop)
+                .Include(l => l.Tenant)
+                .Where(l => propertyIds.Contains((int)l.Property_Id))
+                .ToList();
+
+            if (leases.Count == 0)
+            {
+                Console.WriteLine("No leases found for the properties owned by this owner.");
+                return;
+            }
+
+            // Display the leases
+            Console.WriteLine($"Leases under the access of owner (ID: {ownerId}):");
+            foreach (var lease in leases)
+            {
+                Console.WriteLine("--------------------------------------------");
+                Console.WriteLine($"Lease ID: {lease.LeaseId}");
+                Console.WriteLine($"Tenant ID: {lease.ID}");
+                Console.WriteLine($"Property ID: {lease.Property_Id}");
+                Console.WriteLine($"Start Date: {lease.StartDate?.ToString("yyyy-MM-dd")}");
+                Console.WriteLine($"End Date: {lease.EndDate?.ToString("yyyy-MM-dd")}");
+                Console.WriteLine($"Tenant Signature: {lease.Tenant_Signature}");
+                Console.WriteLine($"Owner Signature: {lease.Owner_Signature}");
+                Console.WriteLine($"Lease Status: {lease.Lease_status}");
+                Console.WriteLine("--------------------------------------------");
+            }
+        }
+
     }
 }
