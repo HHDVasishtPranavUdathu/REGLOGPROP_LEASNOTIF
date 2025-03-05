@@ -54,16 +54,6 @@ namespace REGLOGPROP_LEASNOTIF.Managers
         //    }
         //}
 
-
-
-
-
-
-
-
-
-
-
         public void ReadNotifications(string tid, string ownerId)
         {
             using (var context = new Context())

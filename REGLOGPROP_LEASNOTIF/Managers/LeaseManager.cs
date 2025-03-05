@@ -145,7 +145,7 @@ namespace REGLOGPROP_LEASNOTIF.Managers
 
             // Get the expected owner signature from the database
             var expectedOwnerSignature = cr.cc.Registrations.FirstOrDefault(r => r.ID == ownerId)?.Signature;
-            DisplayLeasesByOwner(ownerId);
+           
             // Prompt for the owner's signature
             Console.WriteLine("Enter Owner Signature:");
             string? inputOwnerSignature = Console.ReadLine();
