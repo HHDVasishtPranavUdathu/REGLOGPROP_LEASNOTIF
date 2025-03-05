@@ -140,6 +140,7 @@ namespace REGLOGPROP_LEASNOTIF
                             var ownerChoice = Console.ReadLine();
                             switch (ownerChoice)
                             {
+      
                                 case "1":
                                     RLP_Manager.InsertProp(); 
                                     break;
@@ -150,9 +151,10 @@ namespace REGLOGPROP_LEASNOTIF
                                     {
                                         Property_Id = proprty_id
                                     };
-
-                                    if (controller.DeleteProp(dts))
+                                    Controller_rlp kkkk = new Controller_rlp();
+                                    if (kkkk.DeleteProp(dts))
                                     {
+
                                         Console.WriteLine("Property With Id {0} Deleted Sucessfully", proprty_id);
                                     }
                                     else
@@ -216,3 +218,4 @@ namespace REGLOGPROP_LEASNOTIF
         }
     }
 }
+//hi
