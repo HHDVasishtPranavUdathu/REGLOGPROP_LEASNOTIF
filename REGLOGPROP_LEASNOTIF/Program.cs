@@ -196,7 +196,5 @@ namespace REGLOGPROP_LEASNOTIF
                 }
             }
         }
-
-       
     }
 }
