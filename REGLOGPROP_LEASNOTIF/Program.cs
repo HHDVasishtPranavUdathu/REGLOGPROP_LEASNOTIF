@@ -41,7 +41,7 @@ namespace REGLOGPROP_LEASNOTIF
                         
                     }
                     else {
-                        Console.WriteLine("invalid ra guudi puka choosi kottara 1 or 2 antey ");
+                        Console.WriteLine("invalid");
                         }
                 }
 
