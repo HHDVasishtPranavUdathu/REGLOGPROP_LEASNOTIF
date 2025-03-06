@@ -21,13 +21,18 @@ namespace REGLOGPROP_LEASNOTIF.Managers
             notificationManager = new NotificationManager();
         }
 
-        public (string leaseId, string ownerId)? Lease()
+        public (string leaseId, string ownerId)? Lease(string? id)
         {
-            Console.WriteLine("Enter Id:");
-            string? id = Console.ReadLine();
-
             Console.WriteLine("Enter Property Id:");
             int? propertyId = Convert.ToInt32(Console.ReadLine());
+
+            var existingLease = cr.cc.Leases.FirstOrDefault(l => l.Property_Id == propertyId && l.Lease_status == true);
+            if (existingLease != null)
+            {
+                Console.WriteLine("This property is already under an active lease. A new lease cannot be created.");
+                return null;
+            }
+
             var property = cr.cc.Props.Include(p => p.Registration).FirstOrDefault(p => p.Property_Id == propertyId);
             if (property != null)
             {
@@ -52,8 +57,15 @@ namespace REGLOGPROP_LEASNOTIF.Managers
                 {
                     Console.WriteLine("Enter End Date (yyyy-mm-dd):");
                     if (DateTime.TryParse(Console.ReadLine(), out endDate))
-                    {
-                        break;
+                    { 
+                        if (endDate > startDate)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            Console.WriteLine("End date must be greater than start date");
+                        }
                     }
                     else
                     {
@@ -67,6 +79,7 @@ namespace REGLOGPROP_LEASNOTIF.Managers
                     Property_Id = propertyId,
                     StartDate = startDate,
                     EndDate = endDate,
+                    Owner_Signature = false,
                     Lease_status = false
                 };
 
@@ -80,19 +93,8 @@ namespace REGLOGPROP_LEASNOTIF.Managers
                 }
                 lease.Tenant_Signature = true;
                 string? ownerId = cr.GetOwnerIdByPropertyId(propertyId);
-                var signatureMatchOwner = cr.cc.Registrations.FirstOrDefault(r => r.ID == ownerId)?.Signature;
+
                 notificationManager.InsertNotification(id, ownerId, "Tenant signed the lease");
-
-                Console.WriteLine("Enter Owner Signature:");
-                string? tempOwnerSignature = Console.ReadLine();
-
-                if (tempOwnerSignature != signatureMatchOwner)
-                {
-                    Console.WriteLine("Owner signature validation failed. Lease data not inserted.");
-                    return null;
-                }
-                lease.Owner_Signature = true;
-                notificationManager.InsertNotification(id, ownerId, "Owner signed the lease");
 
                 var validationResults = new List<ValidationResult>();
                 var validationContext = new ValidationContext(lease);
@@ -108,14 +110,12 @@ namespace REGLOGPROP_LEASNOTIF.Managers
                     return null;
                 }
 
-                lease.Lease_status = true;
-
                 cr.InsertData_Lease(lease);
 
                 Console.WriteLine("Lease data inserted successfully.");
                 DisplayLeaseDetails(lease);
 
-                notificationManager.InsertNotification("sys", "sys", "Both parties signed the lease and it is successfully inserted");
+                notificationManager.InsertNotification(id, ownerId, "Tenant signed the lease. Awaiting owner signature.");
                 return (lease.ID, ownerId);
             }
             else
@@ -123,6 +123,52 @@ namespace REGLOGPROP_LEASNOTIF.Managers
                 Console.WriteLine("Property not found.");
                 return null;
             }
+        }
+
+        public bool UpdateOwnerSignatureAndFinalizeLease(int leaseId, string ownerId)
+        {
+            
+            // Find the lease by its ID
+            var lease = cr.cc.Leases.FirstOrDefault(l => l.LeaseId == leaseId);
+            if (lease == null)
+            {
+                Console.WriteLine("Lease not found.");
+                return false;
+            }
+
+            // Validate that the lease has not been finalized
+            if (lease.Lease_status == true)
+            {
+                Console.WriteLine("The lease is already finalized.");
+                return false;
+            }
+
+            // Get the expected owner signature from the database
+            var expectedOwnerSignature = cr.cc.Registrations.FirstOrDefault(r => r.ID == ownerId)?.Signature;
+           
+            // Prompt for the owner's signature
+            Console.WriteLine("Enter Owner Signature:");
+            string? inputOwnerSignature = Console.ReadLine();
+
+            if (inputOwnerSignature != expectedOwnerSignature)
+            {
+                Console.WriteLine("Owner signature validation failed.");
+                return false;
+            }
+
+            // Update owner signature and lease status
+            lease.Owner_Signature = true;
+            lease.Lease_status = true;
+
+            // Save changes to the database
+            cr.cc.SaveChanges();
+
+            // Send notifications
+            notificationManager.InsertNotification(ownerId, lease.ID, "Owner signed the lease and the lease is finalized.");
+            notificationManager.InsertNotification(ownerId, lease.ID, $"Lease {leaseId} is finalized.");
+
+            Console.WriteLine("Owner signature added and lease finalized successfully.");
+            return true;
         }
 
         public void DisplayLeaseDetails(Lease lease)
@@ -136,6 +182,51 @@ namespace REGLOGPROP_LEASNOTIF.Managers
             Console.WriteLine($"Owner Signature: {lease.Owner_Signature}");
             Console.WriteLine($"Lease Status: {lease.Lease_status}");
         }
-    }
 
+
+        public void DisplayLeasesByOwner(string ownerId)
+        {
+            // Get all properties owned by the owner
+            var properties = cr.cc.Props.Where(p => p.Owner_Id == ownerId).ToList();
+
+            if (properties.Count == 0)
+            {
+                Console.WriteLine("No properties found for this owner.");
+                return;
+            }
+
+            // Extract the Property IDs into a list
+            var propertyIds = properties.Select(p => p.Property_Id).ToList();
+
+            // Get all leases associated with the owner's properties
+            var leases = cr.cc.Leases
+                .Include(l => l.Prop)
+                .Include(l => l.Tenant)
+                .Where(l => propertyIds.Contains((int)l.Property_Id))
+                .ToList();
+
+            if (leases.Count == 0)
+            {
+                Console.WriteLine("No leases found for the properties owned by this owner.");
+                return;
+            }
+
+            // Display the leases
+            Console.WriteLine($"Leases under the access of owner (ID: {ownerId}):");
+            foreach (var lease in leases)
+            {
+                Console.WriteLine("--------------------------------------------");
+                Console.WriteLine($"Lease ID: {lease.LeaseId}");
+                Console.WriteLine($"Tenant ID: {lease.ID}");
+                Console.WriteLine($"Property ID: {lease.Property_Id}");
+                Console.WriteLine($"Start Date: {lease.StartDate?.ToString("yyyy-MM-dd")}");
+                Console.WriteLine($"End Date: {lease.EndDate?.ToString("yyyy-MM-dd")}");
+                Console.WriteLine($"Tenant Signature: {lease.Tenant_Signature}");
+                Console.WriteLine($"Owner Signature: {lease.Owner_Signature}");
+                Console.WriteLine($"Lease Status: {lease.Lease_status}");
+                Console.WriteLine("--------------------------------------------");
+            }
+        }
+
+    }
 }

@@ -12,8 +12,7 @@ namespace REGLOGPROP_LEASNOTIF
             // Initialize context
             var context = new Context();
             var code_java = false;
-            string name;
-
+          string name ="";
             // Initialize controllers and managers
             Controller_ln cr = new Controller_ln();
             var controller = new Controller_rlp();
@@ -88,11 +87,12 @@ namespace REGLOGPROP_LEASNOTIF
                         {
                             Console.WriteLine("Choose an option:");
                             Console.WriteLine("1. Display property details");
-                            Console.WriteLine("2. Insert into lease");
+                            Console.WriteLine("2. get new lease");
                             Console.WriteLine("3. Notifications");
                             Console.WriteLine("4. Payment methods");
                             Console.WriteLine("5. Maintenance");
                             Console.WriteLine("6. Exit");
+                            Console.WriteLine(name);
 
                             var tenantChoice = Console.ReadLine();
                             switch (tenantChoice)
@@ -102,10 +102,10 @@ namespace REGLOGPROP_LEASNOTIF
                                     break;
                                 
                                 case "2":
-                                    leaseManager.Lease();
+                                    leaseManager.Lease(name);
                                     break;
                                 case "3":
-                                    notificationManager.ReadNotifications();
+                                    notificationManager.ReadNotifications(name,name);
                                     break;
                                 case "4":
                                     ptm.pt(name);
@@ -131,14 +131,16 @@ namespace REGLOGPROP_LEASNOTIF
                             Console.WriteLine("1. Insert property");
                             Console.WriteLine("2. Delete property");
                             Console.WriteLine("3. Display property");
-                            Console.WriteLine("4. Insert into lease");
+                            Console.WriteLine("4. lease signing");
                             Console.WriteLine("5. Payment management");
                             Console.WriteLine("6. Maintenance");
-                            Console.WriteLine("7. Exit");
+                            Console.WriteLine("7. Notification");
+                            Console.WriteLine("8. Exit");
 
                             var ownerChoice = Console.ReadLine();
                             switch (ownerChoice)
                             {
+      
                                 case "1":
                                     RLP_Manager.InsertProp(); 
                                     break;
@@ -149,9 +151,10 @@ namespace REGLOGPROP_LEASNOTIF
                                     {
                                         Property_Id = proprty_id
                                     };
-
-                                    if (controller.DeleteProp(dts))
+                                    Controller_rlp kkkk = new Controller_rlp();
+                                    if (kkkk.DeleteProp(dts))
                                     {
+
                                         Console.WriteLine("Property With Id {0} Deleted Sucessfully", proprty_id);
                                     }
                                     else
@@ -163,9 +166,25 @@ namespace REGLOGPROP_LEASNOTIF
                                 case "3":
                                     RLP_Manager.DisplayProps();
                                     break;
+
                                 case "4":
-                                    leaseManager.Lease();
-                                    break;
+                                    leaseManager.DisplayLeasesByOwner(name);
+                                    Console.WriteLine("Enter Lease ID:");
+                                        int leaseId = Convert.ToInt32(Console.ReadLine());
+                                        
+                                        bool success = leaseManager.UpdateOwnerSignatureAndFinalizeLease(leaseId, name);
+
+                                        if (success)
+                                        {
+                                            Console.WriteLine("The lease has been successfully finalized with the owner's signature.");
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("Failed to finalize the lease. Please check the inputs or try again.");
+                                        }
+                                        break;
+                                    
+
                                 case "5":
                                     ptm.pt(name);
                                     break;
@@ -173,6 +192,9 @@ namespace REGLOGPROP_LEASNOTIF
                                     mm.RunAsync();
                                     break;
                                 case "7":
+                                    notificationManager.ReadNotifications(name, name);
+                                    break;
+                                case "8":
                                     ownerExit = true;
                                     break;
                                 default:
@@ -199,3 +221,4 @@ namespace REGLOGPROP_LEASNOTIF
         }
     }
 }
+
