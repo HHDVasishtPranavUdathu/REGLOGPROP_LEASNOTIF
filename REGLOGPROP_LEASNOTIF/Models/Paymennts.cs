@@ -40,4 +40,9 @@ namespace REGLOGPROP_LEASNOTIF.Models
             this.PaymentDate = DateTime.Now;
         }
     }
+
+    public class history
+    {
+
+    }
 }

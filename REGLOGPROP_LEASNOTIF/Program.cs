@@ -7,11 +7,12 @@ namespace REGLOGPROP_LEASNOTIF
 {
     class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             // Initialize context
             var context = new Context();
             var code_java = false;
+            string name;
 
             // Initialize controllers and managers
             Controller_ln cr = new Controller_ln();
@@ -49,7 +50,7 @@ namespace REGLOGPROP_LEASNOTIF
                 {
                     Console.WriteLine("enter userid");
                     string userId = Console.ReadLine();
-        
+                    name = userId;
                     var li = new Controller_rlp();
                     var cock = new Context();
                     var log = new Login(li, cock);
@@ -107,7 +108,7 @@ namespace REGLOGPROP_LEASNOTIF
                                     notificationManager.ReadNotifications();
                                     break;
                                 case "4":
-                                    ptm.pt();
+                                    ptm.pt(name);
                                     break;
                                 case "5":
                                     mm.RunAsync();
@@ -166,7 +167,7 @@ namespace REGLOGPROP_LEASNOTIF
                                     leaseManager.Lease();
                                     break;
                                 case "5":
-                                    ptm.pt();
+                                    ptm.pt(name);
                                     break;
                                 case "6":
                                     mm.RunAsync();
