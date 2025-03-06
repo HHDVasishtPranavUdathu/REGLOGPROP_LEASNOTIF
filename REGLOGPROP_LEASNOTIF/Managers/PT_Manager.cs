@@ -16,7 +16,7 @@ namespace REGLOGPROP_LEASNOTIF.Managers
         private readonly Controller_pt tenantController;
         private readonly Controller_pt paymentController;
         public readonly Controller_ln cr;
-
+        Context see = new Context();
         public PT_Manager(Context context)
         {
             cr = new Controller_ln();
@@ -24,16 +24,15 @@ namespace REGLOGPROP_LEASNOTIF.Managers
             paymentController = new Controller_pt(context);
         }
 
-        public void pt()
+        public void pt(string userId)
         {
-            bool exit = false;
+            bool Exit = true;
 
-            while (!exit)
+            while (Exit)
             {
                 try
                 {
-                    Console.WriteLine("Enter your ID (Tenant ID starts with 'T_', Owner ID starts with 'O_'):");
-                    string userId = Console.ReadLine();
+                    
 
                     if (userId.StartsWith("T_"))
                     {
@@ -53,19 +52,18 @@ namespace REGLOGPROP_LEASNOTIF.Managers
                             Console.WriteLine("1. Make a payment");
                             Console.WriteLine("2. Check payment history");
                             Console.WriteLine("3. Exit");
-
                             var choice = Console.ReadLine();
                             switch (choice)
                             {
                                 case "1":
                                     MakePayment(tenantController, paymentController, userId);
                                     break;
-                                case "2":
+                                case "2": 
                                     var blue = new Controller_pt();
                                     blue.ShowAllPayments();
                                     break;
                                 case "3":
-                                    tenantExit = true;
+                                    Exit = false;
                                     break;
                                 default:
                                     Console.WriteLine("Invalid choice. Please enter 1, 2, or 3.");
@@ -101,7 +99,7 @@ namespace REGLOGPROP_LEASNOTIF.Managers
                                     UpdatePaymentStatus(paymentController);
                                     break;
                                 case "2":
-                                    ownerExit = true;
+                                    Exit = true;
                                     break;
                                 default:
                                     Console.WriteLine("Invalid choice. Please enter 1 or 2.");
@@ -134,12 +132,7 @@ namespace REGLOGPROP_LEASNOTIF.Managers
                 return;
             }
 
-            Console.WriteLine($"Tenant ID: {tenantDetails.ID}");
-            Console.WriteLine($"Tenant Name: {tenantDetails.Name}");
-            Console.WriteLine($"Tenant Phone Number: {tenantDetails.PhoneNumber}");
-            Console.WriteLine($"Tenant Date of Birth: {tenantDetails.D_O_B}");
-            Console.WriteLine($"Tenant Answer: {tenantDetails.Answer}");
-            Console.WriteLine("Enter Property ID:");
+            Console.WriteLine("Enter Property Id:");
             int propertyId = int.Parse(Console.ReadLine());
             Console.WriteLine("Enter Amount:");
             decimal amount = Convert.ToDecimal(Console.ReadLine());
@@ -181,5 +174,8 @@ namespace REGLOGPROP_LEASNOTIF.Managers
                 Console.WriteLine("Payment ID not found or status update failed.");
             }
         }
+
+       
+
     }
 }

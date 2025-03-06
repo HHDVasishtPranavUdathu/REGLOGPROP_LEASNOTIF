@@ -44,13 +44,6 @@ namespace REGLOGPROP_LEASNOTIF.Controller
                     return;
                 }
 
-                // Display tenant details
-                Console.WriteLine($"Tenant ID: {tenantDetails.ID}");
-                Console.WriteLine($"Tenant Name: {tenantDetails.Name}");
-                Console.WriteLine($"Tenant Phone Number: {tenantDetails.PhoneNumber}");
-                Console.WriteLine($"Tenant Date of Birth: {tenantDetails.D_O_B}");
-                Console.WriteLine($"Tenant Answer: {tenantDetails.Answer}");
-
                 context.Add(payment);
                 context.SaveChanges();
             }
@@ -131,5 +124,29 @@ namespace REGLOGPROP_LEASNOTIF.Controller
                 }
             }
         }
+        public void InsertTenantHistory(Context context, string userid)
+        {
+            var payments = context.payments
+           .Select(p => new { p.Ownerstatus }) // Fetch the Ownerstatus column
+              .ToList();
+
+            foreach (var payment in payments)
+            {
+                Console.WriteLine($"Owner Status: {payment.Ownerstatus}");
+
+                if (payment.Ownerstatus != "false") // Compare the property, not the object
+                {
+                    using (var Context1 = new Context())
+                    {
+                        // Fetch tenant details from the Registration table
+                        
+
+                        context.Add(payment);
+                        context.SaveChanges();
+                    }
+                }
+            }
+        }
     }
 }
+//hi

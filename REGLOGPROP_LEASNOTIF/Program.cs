@@ -12,8 +12,7 @@ namespace REGLOGPROP_LEASNOTIF
             // Initialize context
             var context = new Context();
             var code_java = false;
-            string name ="";
-
+          string name ="";
             // Initialize controllers and managers
             Controller_ln cr = new Controller_ln();
             var controller = new Controller_rlp();
@@ -109,7 +108,7 @@ namespace REGLOGPROP_LEASNOTIF
                                     notificationManager.ReadNotifications(name,name);
                                     break;
                                 case "4":
-                                    ptm.pt();
+                                    ptm.pt(name);
                                     break;
                                 case "5":
                                     mm.RunAsync();
@@ -187,7 +186,7 @@ namespace REGLOGPROP_LEASNOTIF
                                     
 
                                 case "5":
-                                    ptm.pt();
+                                    ptm.pt(name);
                                     break;
                                 case "6":
                                     mm.RunAsync();
@@ -222,4 +221,4 @@ namespace REGLOGPROP_LEASNOTIF
         }
     }
 }
-//hi
+
