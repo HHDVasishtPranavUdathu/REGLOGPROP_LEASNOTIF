@@ -145,7 +145,7 @@ namespace REGLOGPROP_LEASNOTIF.Managers
             }
         }
 
-        public static void InsertProp()
+        public static void InsertProp(string userid)
         {
             try
             {
@@ -157,8 +157,7 @@ namespace REGLOGPROP_LEASNOTIF.Managers
                 string description = Console.ReadLine();
                 Console.WriteLine("Is the property available? (true/false)");
                 bool availableStatus = bool.Parse(Console.ReadLine());
-                Console.WriteLine("Enter Owner ID");
-                string ownerId = Console.ReadLine();
+                string ownerId = userid;
 
                 using (var context = new Context())
                 {

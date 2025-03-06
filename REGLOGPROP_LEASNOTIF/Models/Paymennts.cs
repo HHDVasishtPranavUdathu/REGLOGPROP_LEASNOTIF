@@ -41,8 +41,8 @@ namespace REGLOGPROP_LEASNOTIF.Models
         }
     }
 
-    public class history
-    {
+//    public class history
+//    {
 
-    }
+//    }
 }

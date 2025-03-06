@@ -85,6 +85,7 @@ namespace REGLOGPROP_LEASNOTIF
                         bool tenantExit = false;
                         while (!tenantExit)
                         {
+                            Console.WriteLine("hii" + name);
                             Console.WriteLine("Choose an option:");
                             Console.WriteLine("1. Display property details");
                             Console.WriteLine("2. get new lease");
@@ -92,7 +93,7 @@ namespace REGLOGPROP_LEASNOTIF
                             Console.WriteLine("4. Payment methods");
                             Console.WriteLine("5. Maintenance");
                             Console.WriteLine("6. Exit");
-                            Console.WriteLine(name);
+                           
 
                             var tenantChoice = Console.ReadLine();
                             switch (tenantChoice)
@@ -142,7 +143,7 @@ namespace REGLOGPROP_LEASNOTIF
                             {
       
                                 case "1":
-                                    RLP_Manager.InsertProp(); 
+                                    RLP_Manager.InsertProp(name); 
                                     break;
                                 case "2":
                                     Console.WriteLine("Enter the Property_Id to delete");

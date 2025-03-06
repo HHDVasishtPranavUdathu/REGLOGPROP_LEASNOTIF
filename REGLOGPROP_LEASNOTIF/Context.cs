@@ -25,7 +25,7 @@ namespace REGLOGPROP_LEASNOTIF
         public DbSet<Paymennts> payments { get; set; }
         public DbSet<Maintenance> Maintainances { get; set; }
 
-        public DbSet<history> histories { get; set; }   
+        //public DbSet<history> histories { get; set; }   
 
 
 
